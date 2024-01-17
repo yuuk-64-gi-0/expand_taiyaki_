@@ -1,6 +1,7 @@
 import tkinter
 import tkinter.ttk as ttk
 import os
+import re
 import platform
 import typing
 import defcom
@@ -130,7 +131,7 @@ alertlabel.place(x=10,y=50+40*len(comkeys))
 
 #comvale-ntries :typing.List[tkinter.Entry] = []
 
-def filename2ent(ent : tkinter.Entry):
+def Legacy_filename2ent(ent : tkinter.Entry):
     filepath = fm.fileselect()
     filename = os.path.basename(filepath)
     if not(filename in os.listdir()):
@@ -139,6 +140,30 @@ def filename2ent(ent : tkinter.Entry):
     ent.delete(0,tkinter.END)
     ent.insert(tkinter.END,filename)
     ent.config(state="readonly")
+
+def filename2ent(ent : tkinter.Entry):
+    filepath = fm.fileselect()
+    if filepath:
+        normpath = os.path.normpath(filepath)
+        filename = os.path.basename(normpath)
+        filedir = os.path.dirname(normpath)
+        rundir = os.path.dirname(__file__)
+        if filedir != rundir:
+            if not(os.path.isfile(os.path.join(rundir,filename))):
+                shutil.copy(normpath,os.path.join(rundir,filename))
+            else:
+                filespt = os.path.splitext(filename)
+                re_filename = re.compile("%s_[0-9]+\\%s" % filespt)
+                re_findind = re.compile("%s_([0-9])+\\%s" % filespt)
+                lastind =  int(re_findind.sub("\\1",(["%s_0%s" % filespt] + sorted(filter(re_filename.search,os.listdir())))[-1]))
+                dstpath = os.path.join(rundir,"%s_%d%s" % (filespt[0],lastind+1,filespt[1]))
+                shutil.copy(normpath,dstpath)
+                filename = os.path.basename(dstpath)
+        ent.config(state="normal")
+        ent.delete(0,tkinter.END)
+        ent.insert(tkinter.END,filename)
+        ent.config(state="readonly")
+
 
 comvalwidgets = []
 for ind1,comkey in enumerate(comkeys):
