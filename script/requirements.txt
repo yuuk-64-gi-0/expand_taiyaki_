@@ -1,0 +1,5 @@
+numpy>=1.24.4
+Pillow>=10.0.0
+PyAudio>=0.2.12
+pygame>=2.3.0
+webcolors>=1.13
